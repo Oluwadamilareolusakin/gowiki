@@ -5,16 +5,27 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"regexp"
-
+	"os"
+    "regexp"
 	"github.com/oluwadamilareolusakin/gowiki/io"
 )
 
-var templates = template.Must(
-  template.ParseFiles(
-    "templates/404.html", "templates/edit.html", "templates/new.html", "templates/success.html", "templates/show.html",
-  ),
-)
+var absPath, _ = os.Getwd()
+
+var templateFiles = []string{"templates/404.html", "templates/edit.html", "templates/new.html", "templates/success.html", "templates/show.html"}
+
+func parseTemplates() *template.Template {
+  var templates *template.Template
+
+  for _, filename := range templateFiles {
+    filename = absPath + "/" + filename
+    templates = template.Must(template.ParseFiles(filename))
+  }
+
+  return templates
+}
+
+var templates = parseTemplates()
 
 const pagePath string = ".pages"
 

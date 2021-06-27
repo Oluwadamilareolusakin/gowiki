@@ -6,6 +6,7 @@ import (
   "log"
   "net/http"
   "net/url"
+  "os"
   "regexp"
 
   "github.com/oluwadamilareolusakin/gowiki/pageio"
@@ -49,11 +50,15 @@ func renderTemplate(w http.ResponseWriter, title string, page *pageio.Page) {
   handleError(w, err)
 }
 
+func renderNotFound(w http.ResponseWriter, filename string) {
+  renderTemplate(w, "404", &pageio.Page{Title: filename})
+}
+
 func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
   page, err := pageio.LoadPage(pagePath, filename)
 
   if err != nil {
-    renderTemplate(w, "404", &pageio.Page{Title: filename})
+    renderNotFound(w, filename)
     return
   }
 
@@ -62,6 +67,11 @@ func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
 
 func editHandler(w http.ResponseWriter, r *http.Request, filename string) {
   page, err := pageio.LoadPage(pagePath, filename)
+
+  if os.IsNotExist(err) {
+    renderNotFound(w, filename)
+    return
+  }
 
   handleError(w, err)
 
@@ -83,6 +93,12 @@ func saveHandler(w http.ResponseWriter, r *http.Request, filename string) {
 
 func createHandler(w http.ResponseWriter, r *http.Request, filename string) {
   renderTemplate(w, "new", nil)
+}
+
+func init() {
+  if _, err := os.Stat(pagePath); os.IsNotExist(err) {
+    os.Mkdir(pagePath, os.ModePerm)
+  }
 }
 
 func main() {

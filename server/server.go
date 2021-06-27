@@ -1,17 +1,19 @@
-package server
+package main
 
 import (
-	"fmt"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
-    "regexp"
-	"github.com/oluwadamilareolusakin/pageio"
-	"github.com/oluwadamilareolusakin/assetvault/vault"
+  "fmt"
+  "html/template"
+  "log"
+  "net/http"
+  "net/url"
+  "regexp"
+
+  "github.com/oluwadamilareolusakin/gowiki/pageio"
+  "github.com/oluwadamilareolusakin/gowiki/statictemplates"
 )
 
-var absPath, _ = os.Getwd()
+//go:generate go get "github.com/oluwadamilareolusakin/embedfiles"
+//go:generate embedfiles "../statictemplates/template.go" "../templates" "statictemplates"
 
 const pagePath string = ".pages"
 
@@ -22,14 +24,15 @@ func handleError(w http.ResponseWriter, err error) {
   }
 }
 
-var validPath = regexp.MustCompile("^/(new|edit|view|save)/([a-zA-z0-9]+)$")
+var validPath = regexp.MustCompile("^/(new|edit|view|save)/([a-zA-z0-9\\s-]+)$")
 
 func makeHandlerFunc(fn func(w http.ResponseWriter, r *http.Request, title string)) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     match := validPath.FindStringSubmatch(r.URL.Path)
 
     if len(match) >= 2 {
-      fn(w, r, match[2])
+      path, _ := url.QueryUnescape(match[2])
+      fn(w, r, path)
       return
     }
 
@@ -38,17 +41,19 @@ func makeHandlerFunc(fn func(w http.ResponseWriter, r *http.Request, title strin
 }
 
 func renderTemplate(w http.ResponseWriter, title string, page *pageio.Page) {
-  templ, _ := template.New("").Parse(vault.GetFile(title))
-  err := templ.ExecuteTemplate(w, title + ".html", page)
 
+  templateKey := "/" + title + ".html"
+  data := string(statictemplates.Get(templateKey))
+  templ := template.Must(template.New("").Parse(data))
+  err := templ.Execute(w, page)
   handleError(w, err)
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
-  page, err := io.LoadPage(pagePath, filename)
+  page, err := pageio.LoadPage(pagePath, filename)
 
   if err != nil {
-    renderTemplate(w, "404", &io.Page{Title: filename})
+    renderTemplate(w, "404", &pageio.Page{Title: filename})
     return
   }
 
@@ -56,7 +61,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, filename string) {
-  page, err := io.LoadPage(pagePath, filename)
+  page, err := pageio.LoadPage(pagePath, filename)
 
   handleError(w, err)
 
@@ -67,7 +72,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request, filename string) {
   body := r.FormValue("body")
   title := r.FormValue("title")
 
-  page := &io.Page {Title: title, Body: []byte(body)}
+  page := &pageio.Page {Title: title, Body: []byte(body)}
 
   err := page.Save(pagePath)
 

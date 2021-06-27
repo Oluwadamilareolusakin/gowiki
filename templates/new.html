@@ -1,7 +1,50 @@
-<h1>Create a new file</h1>
+<div class="page-container-new_page">
+  <a href="/index">All pages</a>
 
-<form action="/save" method="POST">
-  <input name="title" placeholder="Filename">
-  <textarea name="body" placeholder="Enter some text to save"></textarea>
-  <input type="submit" value="Save" />
-</form>
+  <h1>Create a new file</h1>
+
+  <form class="form" action="/save" method="POST">
+    <input class="form-element form-input-page_title" name="title" placeholder="Filename">
+    <textarea row="40" class="form-element form-textarea-page_body" name="body" placeholder="Enter some text to save"></textarea>
+    <input class="form-element form-button-submit" type="submit" value="Save" />
+  </form>
+</div>
+
+<style>
+.page-container-new_page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.form {
+  width: 500px;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.form-element {
+  margin-bottom: 10px;
+  padding: 15px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: whitesmoke;
+}
+
+.form-textarea-page_body {
+  min-height: 319px;
+}
+
+.form-button-submit {
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.form-button-submit:hover {
+  background-color: #79ceff;
+  color: white;
+}
+</style>

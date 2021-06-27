@@ -8,24 +8,10 @@ import (
 	"os"
     "regexp"
 	"github.com/oluwadamilareolusakin/gowiki/io"
+	"github.com/oluwadamilareolusakin/assetvault/vault"
 )
 
 var absPath, _ = os.Getwd()
-
-var templateFiles = []string{"templates/404.html", "templates/edit.html", "templates/new.html", "templates/success.html", "templates/show.html"}
-
-func parseTemplates() *template.Template {
-  var templates *template.Template
-
-  for _, filename := range templateFiles {
-    filename = absPath + "/" + filename
-    templates = template.Must(template.ParseFiles(filename))
-  }
-
-  return templates
-}
-
-var templates = parseTemplates()
 
 const pagePath string = ".pages"
 
@@ -52,7 +38,8 @@ func makeHandlerFunc(fn func(w http.ResponseWriter, r *http.Request, title strin
 }
 
 func renderTemplate(w http.ResponseWriter, title string, page *io.Page) {
-  err := templates.ExecuteTemplate(w, title + ".html", page)
+  templ, _ := template.New("").Parse(vault.GetFile(title))
+  err := templ.ExecuteTemplate(w, title + ".html", page)
 
   handleError(w, err)
 }

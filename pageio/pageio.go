@@ -1,4 +1,4 @@
-package io
+package pageio
 
 import (
   "io/ioutil"

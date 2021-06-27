@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
     "regexp"
-	"github.com/oluwadamilareolusakin/gowiki/io"
+	"github.com/oluwadamilareolusakin/pageio"
 	"github.com/oluwadamilareolusakin/assetvault/vault"
 )
 
@@ -37,7 +37,7 @@ func makeHandlerFunc(fn func(w http.ResponseWriter, r *http.Request, title strin
   }
 }
 
-func renderTemplate(w http.ResponseWriter, title string, page *io.Page) {
+func renderTemplate(w http.ResponseWriter, title string, page *pageio.Page) {
   templ, _ := template.New("").Parse(vault.GetFile(title))
   err := templ.ExecuteTemplate(w, title + ".html", page)
 
